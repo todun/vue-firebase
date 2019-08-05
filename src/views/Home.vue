@@ -1,6 +1,8 @@
 <template>
   <div id="home">
-    <LowestRated />
+    <div id="lowestRate">
+      <LowestRated />
+    </div>
     <div
       v-if="isMobile()"
       :style="{
@@ -96,7 +98,7 @@
             <span class="green-circle"></span>
             <span class="green-rating" v-if="!article.averageRating"> NA </span>
             <span class="green-rating" v-if="article.averageRating">
-              {{ article.averageRating }}&#65130;
+              {{ article.averageRating }}<span class="percent">%</span>
             </span>
             <span v-if="!article.averageBiasRating">
               <span class="red-circle"></span>
@@ -105,18 +107,18 @@
             <span v-if="article.right">
               <span class="red-circle"></span>
               <span class="red-rating">
-                {{ article.averageBiasRating }}&#65130;
+                {{ article.averageBiasRating }}<span class="percent">%</span>
               </span>
             </span>
             <span v-if="article.left">
               <span class="blue-circle"></span>
               <span class="blue-rating">
-                {{ article.averageBiasRating }}&#65130;
+                {{ article.averageBiasRating }}<span class="percent">%</span>
               </span>
             </span>
             <span v-if="article.neutral">
               <span class="red-circle"> </span>
-              <span class="red-rating"> 0&#65130; </span>
+              <span class="red-rating"> 0<span class="percent">%</span> </span>
             </span>
             <span style="float: right;">
               <router-link
@@ -172,7 +174,8 @@ export default {
       busy: false,
       windowWidth: null,
       marginL: null,
-      containerWidth: null
+      containerWidth: null,
+      isWindow: false
     };
   },
   created() {
@@ -197,7 +200,6 @@ export default {
           averageBiasRating = 4;
           var neutral = true;
         }
-
         const data = {
           id: doc.id,
           author: doc.data().author,
@@ -218,9 +220,7 @@ export default {
         };
         this.articles.push(data);
       });
-
       this.lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
-
       // Construct a new query starting at this document,
       this.next = db
         .collection('articles')
@@ -233,6 +233,10 @@ export default {
     else if (this.isLandScape()) this.containerWidth = 850;
     else if (this.isTablet()) this.containerWidth = 700;
     this.marginL = (this.windowWidth - this.containerWidth) / 2 + 20;
+    var platform = window.navigator.platform,
+      windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'];
+    if (windowsPlatforms.indexOf(platform) != -1) this.isWindow = true;
+    if (this.isWindow) this.marginL -= 13;
     if (this.isMobile()) {
       this.containerWidth = this.windowWidth + 250;
       this.marginL = 10;
@@ -245,11 +249,15 @@ export default {
       else if (this.isLandScape()) this.containerWidth = 850;
       else if (this.isTablet()) this.containerWidth = 700;
       this.marginL = (this.windowWidth - this.containerWidth) / 2 + 20;
+      if (this.isWindow) this.marginL -= 13;
       if (this.isMobile()) {
         this.containerWidth = this.windowWidth + 250;
         this.marginL = 10;
       }
     });
+    document
+      .getElementById('lowestRate')
+      .addEventListener('touchmove', e => e.preventDefault());
   },
   methods: {
     loadMore: function() {
@@ -261,7 +269,6 @@ export default {
             if (doc.data().averageRating) {
               var avgRatingRounded = Math.trunc(doc.data().averageRating * 10);
             }
-
             var averageBiasRating = doc.data().averageBiasRating;
             if (averageBiasRating < 4) {
               averageBiasRating = Math.trunc((4 - averageBiasRating) / 0.03);
@@ -578,6 +585,13 @@ a {
   opacity: 0.81;
   position: relative;
   top: 4px;
+}
+.percent {
+  font-size: 14px;
+  position: relative;
+  bottom: 1px;
+  left: 1px;
+  margin-right: 6px;
 }
 @media screen and (max-width: 600px) {
   .rate-row {

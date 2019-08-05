@@ -53,7 +53,12 @@
                 {{ article.title }}
               </div>
             </router-link>
-            <span class="rating"> {{ article.averageRating }} </span>
+            <span v-if="article.averageRating != 100" :class="rating()">
+              {{ article.averageRating }}
+            </span>
+            <span v-else :class="smallrating()">
+              {{ article.averageRating }}
+            </span>
           </div>
         </vueper-slide>
       </vueper-slides>
@@ -86,7 +91,8 @@ export default {
           arrows: false,
           bullets: true
         }
-      }
+      },
+      isWindow: false
     };
   },
   created() {
@@ -130,6 +136,10 @@ export default {
       this.containerWidth = 0.45 * this.windowWidth;
     else if (this.windowWidth < 500)
       this.containerWidth = 0.9 * this.windowWidth;
+
+    var platform = window.navigator.platform,
+      windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'];
+    if (windowsPlatforms.indexOf(platform) != -1) this.isWindow = true;
   },
   mounted() {
     window.addEventListener('resize', () => {
@@ -156,6 +166,16 @@ export default {
       else if (this.windowWidth >= 700) return 3;
       else if (this.windowWidth >= 500) return 2;
       else return 1;
+    }
+  },
+  methods: {
+    smallrating() {
+      if (this.isWindow) return 'small-rating-win';
+      else return 'small-rating';
+    },
+    rating() {
+      if (this.isWindow) return 'rating-win';
+      else return 'rating';
     }
   }
 };
@@ -187,9 +207,10 @@ a {
 div {
   font-family: Helvetica, Arial, sans-serif;
 }
+/*
 .vueperslides {
   touch-action: none;
-}
+} */
 #lowestRateTitle {
   font-size: 25px;
   padding-top: 5px;
@@ -204,6 +225,48 @@ div {
   font-weight: 800;
   color: white;
   font-size: 20px;
+  background-color: #4caf50;
+  border-radius: 50%;
+  -webkit-font-smoothing: antialiased;
+}
+.small-rating {
+  position: absolute;
+  padding-top: 3px;
+  top: 5px;
+  left: 5px;
+  width: 30px;
+  height: 30px;
+  font-weight: 800;
+  color: white;
+  font-size: 17px;
+  background-color: #4caf50;
+  border-radius: 50%;
+  -webkit-font-smoothing: antialiased;
+}
+.rating-win {
+  position: absolute;
+  padding-top: 1px;
+  top: 5px;
+  left: 5px;
+  width: 30px;
+  height: 30px;
+  font-weight: 700;
+  color: white;
+  font-size: 20px;
+  background-color: #4caf50;
+  border-radius: 50%;
+  -webkit-font-smoothing: antialiased;
+}
+.small-rating-win {
+  position: absolute;
+  padding-top: 3px;
+  top: 5px;
+  left: 5px;
+  width: 30px;
+  height: 30px;
+  font-weight: 700;
+  color: white;
+  font-size: 17px;
   background-color: #4caf50;
   border-radius: 50%;
   -webkit-font-smoothing: antialiased;
